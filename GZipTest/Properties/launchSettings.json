@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "GZipTest": {
+      "commandName": "Project",
+      "commandLineArgs": "decompress \"2.png\" \"3.png\" "
+    }
+  }
+}
