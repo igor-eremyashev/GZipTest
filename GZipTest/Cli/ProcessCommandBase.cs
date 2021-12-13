@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CliFx;
 using CliFx.Attributes;
 using CliFx.Infrastructure;
@@ -21,7 +20,7 @@ namespace GZipTest.Cli
         public int ChunkPoolSize { get; init; } = 10;
 
         [CommandOption("degree_of_parallelism", 'd', Description = "Number of simultaneous processing threads.")]
-        public int DegreeOfParallelism { get; init; } = Environment.ProcessorCount;
+        public int DegreeOfParallelism { get; init; } = 2;
 
         public abstract ValueTask ExecuteAsync(IConsole console);
     }

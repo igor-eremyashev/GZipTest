@@ -5,11 +5,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace GZipTest
 {
     public abstract class ChunkProcessor
     {
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly ChunkPool _chunkPool;
         private readonly int _degreeOfParallelism;
 
@@ -66,15 +69,15 @@ namespace GZipTest
                     await ReadChunkAsync(stream, chunk, cancellationTokenSource.Token);
                     chunk.Sequence = sequence++;
 
-                    Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) filled with data");
+                    Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) filled with data");
 
                     processingQueue.Add(chunk);
 
-                    Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) placed into processing queue");
+                    Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) placed into processing queue");
 
                     if (chunk.IsEof)
                     {
-                        Console.WriteLine("Initial file finished");
+                        Logger.Debug("Initial file finished");
                         processingQueue.CompleteAdding();
                         return;
                     }
@@ -96,14 +99,14 @@ namespace GZipTest
             {
                 foreach (Chunk chunk in processingQueue.GetConsumingEnumerable(cancellationTokenSource.Token))
                 {
-                    Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) retrieved from processing queue by thread {Thread.CurrentThread.ManagedThreadId}");
+                    Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) retrieved from processing queue by thread {Thread.CurrentThread.ManagedThreadId}");
 
                     if (!chunk.IsEof)
                     {
                         ProcessChunk(chunk);
                     }
 
-                    Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) processed by thread {Thread.CurrentThread.ManagedThreadId}");
+                    Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) processed by thread {Thread.CurrentThread.ManagedThreadId}");
 
                     finalizationQueue.Add(chunk);
                 }
@@ -137,7 +140,7 @@ namespace GZipTest
 
                     await WriteChunkAsync(stream, chunk, cancellationTokenSource.Token);
 
-                    Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) written to disk");
+                    Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) written to disk");
 
                     _chunkPool.Return(chunk);
                 }

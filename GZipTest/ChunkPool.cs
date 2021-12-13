@@ -3,11 +3,14 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NLog;
 
 namespace GZipTest
 {
     public class ChunkPool
     {
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private readonly SemaphoreSlim _semaphore;
         private readonly ConcurrentBag<Chunk> _chunks;
 
@@ -27,7 +30,7 @@ namespace GZipTest
 
             if (_chunks.TryTake(out var result))
             {
-                Console.WriteLine("Chunk borrowed");
+                Logger.Debug("Chunk borrowed");
 
                 return result;
             }
@@ -37,7 +40,7 @@ namespace GZipTest
 
         public void Return(Chunk chunk)
         {
-            Console.WriteLine($"Chunk #{chunk.Sequence} returned");
+            Logger.Debug($"Chunk #{chunk.Sequence} returned");
 
             chunk.Reset();
 

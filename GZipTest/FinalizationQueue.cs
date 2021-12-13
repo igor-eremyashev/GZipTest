@@ -3,11 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using NLog;
 
 namespace GZipTest
 {
     public class FinalizationQueue
     {
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
         private int _nextChunkNumber;
         private readonly SortedDictionary<int, Chunk> _pendingChunks;
         private readonly BlockingCollection<Chunk> _sortedChunks;
@@ -23,13 +26,13 @@ namespace GZipTest
         {
             lock (_pendingChunks)
             {
-                Console.WriteLine($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) placed into finalization queue by thread {Thread.CurrentThread.ManagedThreadId}");
+                Logger.Debug($"Chunk #{chunk.Sequence} ({chunk.GetHashCode()}) placed into finalization queue by thread {Thread.CurrentThread.ManagedThreadId}");
 
                 _pendingChunks.Add(chunk.Sequence, chunk);
 
                 while (true)
                 {
-                    Console.WriteLine($"Chunks ready for write: {string.Join(", ", _pendingChunks.Select(x => x.Key))}");
+                    Logger.Debug($"Chunks ready for write: {string.Join(", ", _pendingChunks.Select(x => x.Key))}");
 
                     if (_pendingChunks.Count == 0)
                     {
