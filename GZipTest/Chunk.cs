@@ -1,12 +1,14 @@
-﻿namespace GZipTest
+﻿using System;
+
+namespace GZipTest
 {
     public class Chunk
     {
         public Chunk(int size)
         {
             Size = size;
-            UncompressedData = new byte[size];
-            CompressedData = new byte[(int)(size * 1.2)];
+            UncompressedData = GC.AllocateUninitializedArray<byte>(size);
+            CompressedData = GC.AllocateUninitializedArray<byte>((int)(size * 1.2));
         }
 
         public int Size { get; }
